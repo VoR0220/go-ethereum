@@ -48,7 +48,11 @@ func pad(input []byte, size int, left bool) []byte {
 	return common.RightPadBytes(input, size)
 }
 
-func TestTypeCheck(t *testing.T) {
+// Metadata
+
+// Packing
+
+func TestPackingTypeCheck(t *testing.T) {
 	for i, test := range []struct {
 		typ   string
 		input interface{}
@@ -103,6 +107,8 @@ func TestTypeCheck(t *testing.T) {
 		}
 	}
 }
+
+// Unpacking
 
 func TestSimpleMethodUnpack(t *testing.T) {
 	for i, test := range []struct {
@@ -300,6 +306,8 @@ func TestSimpleMethodUnpack(t *testing.T) {
 		}
 	}
 }
+
+// JSON?
 
 func TestUnpackSetInterfaceSlice(t *testing.T) {
 	var (

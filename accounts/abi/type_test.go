@@ -31,6 +31,7 @@ func TestTypeRegexp(t *testing.T) {
 		blob string
 		kind Type
 	}{
+		// int and uint should always be in the form of their 256 forms as the ABI is very specific
 		{"int", Type{Kind: reflect.Ptr, Type: big_t, Size: 256, T: IntTy, stringKind: "int256"}},
 		{"int8", Type{Kind: reflect.Int8, Type: big_t, Size: 8, T: IntTy, stringKind: "int8"}},
 		{"int256", Type{Kind: reflect.Ptr, Type: big_t, Size: 256, T: IntTy, stringKind: "int256"}},
