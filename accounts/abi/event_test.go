@@ -17,6 +17,7 @@
 package abi
 
 import (
+	"math/big"
 	"strings"
 	"testing"
 
@@ -31,7 +32,7 @@ func TestEventId(t *testing.T) {
 	}{
 		{
 			definition: `[
-			{ "type" : "event", "name" : "balance", "inputs": [{ "name" : "in", "type": "uint" }] },
+			{ "type" : "event", "name" : "balance", "inputs": [{ "name" : "in", "type": "uint256" }] },
 			{ "type" : "event", "name" : "check", "inputs": [{ "name" : "t", "type": "address" }, { "name": "b", "type": "uint256" }] }
 			]`,
 			expectations: map[string]common.Hash{
@@ -52,5 +53,48 @@ func TestEventId(t *testing.T) {
 				t.Errorf("expected id to be %x, got %x", test.expectations[name], event.Id())
 			}
 		}
+	}
+}
+
+func TestEventUnpacking(t *testing.T) {
+	for i, test := range []struct {
+		definition     string      //abi definition
+		data           []byte      //log data gotten from the event
+		expectedOutput interface{} // the expected output
+		err            string      // empty or error if expected
+	}{
+		{
+			`[{"anonymous":false,"inputs":[{"indexed":false,"name":"a","type":"uint256"},{"indexed":true,"name":"b","type":"uint256"},{"indexed":false,"name":"c","type":"uint256"}],"name":"A","type":"event"}]`,
+			append(pad([]byte{1}, 32, true), pad([]byte{3}, 32, true)...),
+			[]interface{}{*big.Int{1}, *big.Int{3}},
+			"",
+		},
+		{
+			`[{"anonymous":false,"inputs":[{"indexed":false,"name":"a","type":"int256"},{"indexed":true,"name":"b","type":"int256"},{"indexed":false,"name":"c","type":"int256"}],"name":"B","type":"event"}]`,
+			append(pad([]byte{1}, 32, true), pad([]byte{3}, 32, true)...),
+			[]interface{}{*big.Int{1}, *big.Int{3}},
+			"",
+		},
+		{
+			`[{"anonymous":false,"inputs":[{"indexed":false,"name":"a","type":"bool"},{"indexed":false,"name":"b","type":"int256"},{"indexed":false,"name":"c","type":"uint256"}],"name":"C","type":"event"}]`,
+			append(pad([]byte{0}, 32, true), append(pad([]byte{1}, 32, true), pad([]byte{3}, 32, true)...)...),
+			[]interface{}{false, *big.Int{1}, *big.Int{3}},
+			"",
+		},
+		{
+			`[{"anonymous":false,"inputs":[{"indexed":false,"name":"a","type":"string"},{"indexed":false,"name":"b","type":"string"},{"indexed":false,"name":"c","type":"string"}],"name":"D","type":"event"}]`,
+		},
+		{
+			`[{"anonymous":false,"inputs":[{"indexed":true,"name":"a","type":"string"},{"indexed":true,"name":"b","type":"string"},{"indexed":true,"name":"c","type":"string"}],"name":"E","type":"event"}]`,
+			[]byte(nil),
+			[]interface{}{},
+			"",
+		},
+	} {
+		abi, err := JSON(strings.NewReader(test.definition))
+		if err != nil {
+			t.Fatal(err)
+		}
+
 	}
 }
